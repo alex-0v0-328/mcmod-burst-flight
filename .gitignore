@@ -1,0 +1,49 @@
+### Gradle ###
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/**/out/
+
+.run/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.eclipse/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/**/bin/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Minecraft Modding ###
+run/
+run-gametest/
+!**/src/**/run/
+logs/
+!**/src/**/logs/
+**/src/generated/**/.cache/
+repo/
+!**/src/**/repo/
+
+### Agent tooling: local-only, kept out of the repository; CLAUDE.md and the always-on skills are tracked for cloud sessions, as in Guzhenren (Alex, 2026-10-01) ###
+.claude/settings.local.json
+
+### Local-only tests: every test under src/test stays out of GitHub, as in Guzhenren (Alex, 2026-10-01) ###
+src/test/

@@ -1,0 +1,5 @@
+jdk:
+  - openjdk21
+# A commit from Windows stores gradlew without the executable bit, as the GitHub workflow also assumes.
+before_install:
+  - chmod +x gradlew

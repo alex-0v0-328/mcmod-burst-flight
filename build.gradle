@@ -1,0 +1,160 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.148'
+    id 'idea'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+repositories {
+}
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// Other mods compile against the public API (BurstFlightApi), so the published artifact carries its sources.
+java.withSourcesJar()
+
+// Every test lives under src/test, local-only and gitignored as in Guzhenren, one folder per layer,
+// and none of them ships in the jar:
+//   pure  'test': plain JUnit over the pure rules (double-tap window, multiplier resolution); nothing
+//         here boots Minecraft.
+//   game  'gametest': @GameTest classes plus their scene template, run by runGameTestServer on a real
+//         dedicated server. The source set joins the mod below, so dev runs still find the tests.
+sourceSets {
+    test {
+        java.srcDirs = ['src/test/pure/java']
+        resources.srcDirs = []
+    }
+    gametest {
+        java.srcDirs = ['src/test/game/java']
+        resources.srcDirs = ['src/test/game/resources']
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        // Its own game directory keeps the GameTest world apart from the run/ dev world.
+        gameTestServer {
+            type = "gameTestServer"
+            sourceSet = sourceSets.gametest
+            gameDirectory = project.file('run-gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+
+            logLevel = org.slf4j.event.Level.DEBUG
+
+            // The guzhenren IDEA window links this project too, and its runs use the plain names, so
+            // ours carry the mod name and a folder instead of overwriting Client, Server, GameTestServer.
+            ideName = "Burst Flight ${ideName.get()}"
+            ideFolderName = 'Burst Flight'
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+            // src/test is local-only (gitignored), so a CI or JitPack checkout has no GameTests to join.
+            if (file('src/test/game/java').isDirectory()) {
+                sourceSet(sourceSets.gametest)
+            }
+        }
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    testImplementation platform("org.junit:junit-bom:${junit_version}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+neoForge.addModdingDependenciesTo sourceSets.gametest
+configurations {
+    gametestImplementation.extendsFrom implementation
+    gametestRuntimeOnly.extendsFrom localRuntime, runtimeOnly
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+// JitPack runs "build publishToMavenLocal" on a tag or commit of the GitHub repository and serves what
+// lands in the local Maven repository (jitpack.yml picks Java 21).
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = "file://${project.projectDir}/repo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

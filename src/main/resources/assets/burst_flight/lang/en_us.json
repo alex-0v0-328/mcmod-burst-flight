@@ -1,0 +1,15 @@
+{
+  "burst_flight.configuration.title": "Burst Flight Configuration",
+  "burst_flight.configuration.section.burst.flight.client.toml": "Client Settings",
+  "burst_flight.configuration.section.burst.flight.client.toml.title": "Burst Flight Client Settings",
+  "burst_flight.configuration.section.burst.flight.server.toml": "Server Settings",
+  "burst_flight.configuration.section.burst.flight.server.toml.title": "Burst Flight Server Settings",
+  "burst_flight.configuration.fovEffect": "Widen View",
+  "burst_flight.configuration.fovEffect.tooltip": "Whether the field of view widens during a burst",
+  "burst_flight.configuration.fovIncrease": "View Widening (%)",
+  "burst_flight.configuration.fovIncrease.tooltip": "How much wider the field of view gets during a burst, in percent. The FOV Effects slider scales it, and Minecraft caps the total widening, sprint and flight included, at 50 percent",
+  "burst_flight.configuration.multiplier": "Speed Multiplier",
+  "burst_flight.configuration.multiplier.tooltip": "Flying speed during a burst, as a multiple of vanilla creative flight; sprinting doubles it as in creative. A player another mod granted its own multiple keeps that one",
+  "burst_flight.configuration.everyone": "Everyone May Fly",
+  "burst_flight.configuration.everyone.tooltip": "Whether every player may burst-fly; when off, only players another mod allows can"
+}
