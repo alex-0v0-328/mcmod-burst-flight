@@ -61,7 +61,7 @@ Declare the dependency in `neoforge.mods.toml`:
     side="BOTH"
 ```
 
-The API is `net.alex.burstflight.api.BurstFlightApi`, called on the server only, with a `ServerPlayer`:
+The API is `net.alex.burstflight.api.BFApi`, called on the server only, with a `ServerPlayer`:
 
 | Method                      | Effect                                                                |
 |-----------------------------|-----------------------------------------------------------------------|
@@ -75,7 +75,7 @@ The API is `net.alex.burstflight.api.BurstFlightApi`, called on the server only,
 A decision is saved with the player and survives death, so one call is enough; a later call replaces it. A new multiple applies to a flight in progress within one tick.
 
 ```java
-BurstFlightApi.allow(serverPlayer, 5.0);
+BFApi.allow(serverPlayer, 5.0);
 ```
 
 ## Requirements

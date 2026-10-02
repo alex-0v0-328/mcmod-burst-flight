@@ -1,4 +1,4 @@
-package net.alex.burstflight.client;
+package net.alex.burstflight.client.input;
 
 /**
  * Pure double-tap detection over client ticks, kept free of game state so plain JUnit covers it.

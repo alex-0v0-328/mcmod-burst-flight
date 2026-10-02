@@ -61,7 +61,7 @@ dependencies {
     side="BOTH"
 ```
 
-API 在 `net.alex.burstflight.api.BurstFlightApi`，只在伺服器端呼叫，參數是 `ServerPlayer`：
+API 在 `net.alex.burstflight.api.BFApi`，只在伺服器端呼叫，參數是 `ServerPlayer`：
 
 | 方法                        | 作用                                                   |
 |-----------------------------|--------------------------------------------------------|
@@ -75,7 +75,7 @@ API 在 `net.alex.burstflight.api.BurstFlightApi`，只在伺服器端呼叫，�
 決定隨玩家存檔保存，死亡後仍然有效，所以呼叫一次就夠了；再次呼叫會覆蓋。正在飛行時改倍數，一個遊戲刻內就生效。
 
 ```java
-BurstFlightApi.allow(serverPlayer, 5.0);
+BFApi.allow(serverPlayer, 5.0);
 ```
 
 ## 相依性

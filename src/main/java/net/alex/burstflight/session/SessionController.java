@@ -1,6 +1,7 @@
-package net.alex.burstflight;
+package net.alex.burstflight.session;
 
-import net.alex.burstflight.api.BurstFlightApi;
+import net.alex.burstflight.BurstFlight;
+import net.alex.burstflight.permission.GrantAttachment;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -16,12 +17,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The server half of a burst: starts it on a double tap, keeps it alive, ends it.
  *
- * <p>{@link #start} needs a multiple above 0 ({@link BurstFlightApi#getMultiplier}) and a player who could fly at
- * all ({@link #canFly}: alive, not a spectator, not riding, not asleep). It lets the player fly through a transient
- * modifier on NeoForge's {@code creative_flight} attribute ({@link #FLIGHT}) rather than {@code Abilities#mayfly},
- * so it never takes away flight another mod or the game mode granted, and turns flying on. The client is told the
+ * <p>{@link #start} needs a multiple above 0 ({@link GrantAttachment#multiplier}) and a player who could fly at all
+ * ({@link #canFly}: alive, not a spectator, not riding, not asleep). It lets the player fly through a transient
+ * modifier on NeoForge's {@code creative_flight} attribute ({@link #FLIGHT}) rather than {@code Abilities#mayfly}, so
+ * it never takes away flight another mod or the game mode granted, and turns flying on. The client is told the
  * multiple before the abilities packet, so a player standing on the ground jumps first and the client's landing check
- * does not end the flight on its first tick ({@link net.alex.burstflight.client.ClientBurstState#receive}).
+ * does not end the flight on its first tick.
  *
  * <p>The speed itself is never written to {@code Abilities}, which the game saves: only the client scales its own
  * flight, by the multiple from {@link #send}. The server needs no speed, since it does not simulate player movement.
@@ -33,7 +34,7 @@ import org.jetbrains.annotations.NotNull;
  * nothing else lets the player fly, turns flying off, so a survival player falls from where the burst ended; a
  * creative player keeps flying at normal speed. It always resends the abilities: a client that turned flying back on
  * with vanilla's double jump in the tick before the modifier's removal reached it would otherwise keep flying
- * unauthorized. A player logging out mid-burst keeps it ({@link BurstAttachments}).
+ * unauthorized. A player logging out mid-burst keeps it ({@link SessionAttachments}).
  *
  * @author Alex
  * @version 1.0.0
@@ -41,17 +42,21 @@ import org.jetbrains.annotations.NotNull;
  */
 
 @EventBusSubscriber(modid = BurstFlight.MOD_ID)
-public final class BurstController {
+public final class SessionController {
 
     private static final ResourceLocation FLIGHT_ID = ResourceLocation.fromNamespaceAndPath(BurstFlight.MOD_ID,
             "burst");
     private static final AttributeModifier FLIGHT = new AttributeModifier(FLIGHT_ID, 1.0,
             AttributeModifier.Operation.ADD_VALUE);
 
-    private BurstController() {}
+    private SessionController() {}
+
+    public static boolean isBursting(@NotNull ServerPlayer player) {
+        return player.hasData(SessionAttachments.BURSTING);
+    }
 
     public static void toggle(@NotNull ServerPlayer player) {
-        if (BurstFlightApi.isBursting(player)) {
+        if (isBursting(player)) {
             stop(player);
         } else {
             start(player);
@@ -59,11 +64,11 @@ public final class BurstController {
     }
 
     public static boolean start(@NotNull ServerPlayer player) {
-        double multiplier = BurstFlightApi.getMultiplier(player);
+        double multiplier = GrantAttachment.multiplier(player);
         if (multiplier <= 0.0 || !canFly(player)) {
             return false;
         }
-        player.setData(BurstAttachments.BURSTING, true);
+        player.setData(SessionAttachments.BURSTING, true);
         grantFlight(player);
         send(player, (float) multiplier);
         player.getAbilities().flying = true;
@@ -72,7 +77,7 @@ public final class BurstController {
     }
 
     public static void stop(@NotNull ServerPlayer player) {
-        player.removeData(BurstAttachments.BURSTING);
+        player.removeData(SessionAttachments.BURSTING);
         AttributeInstance flight = player.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
         if (flight != null) {
             flight.removeModifier(FLIGHT_ID);
@@ -85,16 +90,16 @@ public final class BurstController {
     }
 
     public static void tick(@NotNull ServerPlayer player) {
-        if (!BurstFlightApi.isBursting(player)) {
+        if (!isBursting(player)) {
             return;
         }
-        float multiplier = (float) BurstFlightApi.getMultiplier(player);
+        float multiplier = (float) GrantAttachment.multiplier(player);
         if (multiplier <= 0.0F || !canFly(player) || !player.getAbilities().flying) {
             stop(player);
             return;
         }
         grantFlight(player);
-        if (player.getData(BurstAttachments.SENT_MULTIPLIER) != multiplier) {
+        if (player.getData(SessionAttachments.SENT_MULTIPLIER) != multiplier) {
             send(player, multiplier);
         }
     }
@@ -109,7 +114,7 @@ public final class BurstController {
     @SubscribeEvent
     public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            player.removeData(BurstAttachments.SENT_MULTIPLIER);
+            player.removeData(SessionAttachments.SENT_MULTIPLIER);
         }
     }
 
@@ -125,7 +130,7 @@ public final class BurstController {
     }
 
     private static void send(ServerPlayer player, float multiplier) {
-        player.setData(BurstAttachments.SENT_MULTIPLIER, multiplier);
-        PacketDistributor.sendToPlayer(player, new BurstNetwork.State(multiplier));
+        player.setData(SessionAttachments.SENT_MULTIPLIER, multiplier);
+        PacketDistributor.sendToPlayer(player, new SessionPayloads.State(multiplier));
     }
 }

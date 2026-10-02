@@ -1,4 +1,4 @@
-package net.alex.burstflight.client;
+package net.alex.burstflight.client.view;
 
 /**
  * Pure field-of-view math, kept free of game state so plain JUnit covers it.
