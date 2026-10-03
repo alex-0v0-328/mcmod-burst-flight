@@ -21,7 +21,7 @@ base {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-// Other mods compile against the public API (BurstFlightApi), so the published artifact carries its sources.
+// Other mods compile against the public API (BFApi), so the published artifact carries its sources.
 java.withSourcesJar()
 
 // Every test lives under src/test, local-only and gitignored as in Guzhenren, one folder per layer,

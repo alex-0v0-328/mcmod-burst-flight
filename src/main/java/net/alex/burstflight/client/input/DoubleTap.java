@@ -15,18 +15,18 @@ public final class DoubleTap {
 
     private static final long NONE = Long.MIN_VALUE;
     private final int windowTicks;
-    private long lastPress = NONE;
+    private long lastPressTicks = NONE;
 
     public DoubleTap(int windowTicks) {
         this.windowTicks = windowTicks;
     }
 
-    public boolean press(long tick) {
-        if (lastPress != NONE && tick - lastPress <= windowTicks) {
-            lastPress = NONE;
+    public boolean press(long ticks) {
+        if (lastPressTicks != NONE && ticks - lastPressTicks <= windowTicks) {
+            lastPressTicks = NONE;
             return true;
         }
-        lastPress = tick;
+        lastPressTicks = ticks;
         return false;
     }
 }

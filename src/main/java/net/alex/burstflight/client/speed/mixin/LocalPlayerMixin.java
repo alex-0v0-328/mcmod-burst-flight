@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
  * <p>Two readings of the flying speed move a flying player: the horizontal one, {@code Player#getFlyingSpeed}
  * (doubled while sprinting), and the climb and descent one inside {@code LocalPlayer#aiStep}. {@link #getFlyingSpeed}
  * overrides the first for {@code LocalPlayer} alone and {@link #burst_flight$scaleClimb} scales the second, both by
- * {@link ClientBurstState#multiplier}. Only the local player runs this physics, so the multiple never reaches other
+ * {@link ClientBurstState#getMultiplier}. Only the local player runs this physics, so the multiple never reaches other
  * players, the integrated server's players or the save. The constructor only satisfies the compiler; Mixin discards
  * it.
  *
@@ -34,12 +34,12 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer {
     @Override
     protected float getFlyingSpeed() {
         float speed = super.getFlyingSpeed();
-        return getAbilities().flying ? speed * ClientBurstState.multiplier() : speed;
+        return getAbilities().flying ? speed * ClientBurstState.getMultiplier() : speed;
     }
 
     @ModifyExpressionValue(method = "aiStep", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Abilities;getFlyingSpeed()F"))
     private float burst_flight$scaleClimb(float speed) {
-        return speed * ClientBurstState.multiplier();
+        return speed * ClientBurstState.getMultiplier();
     }
 }

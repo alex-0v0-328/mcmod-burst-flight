@@ -19,8 +19,8 @@ import org.jetbrains.annotations.NotNull;
  * force, 0 once a burst ends.
  *
  * <p>NeoForge 21.1 registers both directions in common code, so the client half plugs its {@link State} handler in
- * through {@link #onState} from its own entry point; this package never refers to client code, and on a dedicated
- * server the handler stays a no-op.
+ * through {@link #setStateHandler} from its own entry point; this package never refers to client code, and on a
+ * dedicated server the handler stays a no-op.
  *
  * <p>Both are required channels, so a client without the mod cannot join a server that has it, and the reverse; the
  * client half alone could not fly, and the server half alone would never hear a double tap.
@@ -36,11 +36,11 @@ public final class SessionPayloads {
 
     private SessionPayloads() {}
 
-    public static void onState(@NotNull BiConsumer<Player, Float> handler) {
+    public static void setStateHandler(@NotNull BiConsumer<Player, Float> handler) {
         stateHandler = handler;
     }
 
-    public static void register(RegisterPayloadHandlersEvent event) {
+    public static void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
         registrar.playToServer(Toggle.TYPE, Toggle.STREAM_CODEC, (payload, context) -> {
             if (context.player() instanceof ServerPlayer player) {

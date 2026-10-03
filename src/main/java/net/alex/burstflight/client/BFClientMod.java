@@ -14,7 +14,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 /**
  * The client-only entry point beside {@link BurstFlight}: registers the client config {@link ClientConfig} and
  * NeoForge's generated config screen, which the mod list's Config button opens (client settings and, in
- * singleplayer, the server settings too), and plugs {@link ClientBurstState#receive} into the server's state payload.
+ * singleplayer, the server settings too), and plugs {@link ClientBurstState#onState} into the server's state payload.
  * The client features themselves ({@code input}, {@code speed}, {@code view}) subscribe to their own events.
  *
  * @author Alex
@@ -28,6 +28,6 @@ public final class BFClientMod {
     public BFClientMod(ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-        SessionPayloads.onState(ClientBurstState::receive);
+        SessionPayloads.setStateHandler(ClientBurstState::onState);
     }
 }

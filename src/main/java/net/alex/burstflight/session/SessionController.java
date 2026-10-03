@@ -17,15 +17,16 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The server half of a burst: starts it on a double tap, keeps it alive, ends it.
  *
- * <p>{@link #start} needs a multiple above 0 ({@link GrantAttachment#multiplier}) and a player who could fly at all
- * ({@link #canFly}: alive, not a spectator, not riding, not asleep). It lets the player fly through a transient
- * modifier on NeoForge's {@code creative_flight} attribute ({@link #FLIGHT}) rather than {@code Abilities#mayfly}, so
- * it never takes away flight another mod or the game mode granted, and turns flying on. The client is told the
- * multiple before the abilities packet, so a player standing on the ground jumps first and the client's landing check
- * does not end the flight on its first tick.
+ * <p>{@link #start} needs a multiple above 0 ({@link GrantAttachment#getMultiplier}) and a player who could fly at all
+ * ({@link #isAbleToFly}: alive, not a spectator, not riding, not asleep). It lets the player fly through a transient
+ * modifier on NeoForge's {@code creative_flight} attribute ({@link #FLIGHT_MODIFIER}) rather than
+ * {@code Abilities#mayfly}, so it never takes away flight another mod or the game mode granted, and turns flying on.
+ * The client is told the multiple before the abilities packet, so a player standing on the ground jumps first and the
+ * client's landing check does not end the flight on its first tick.
  *
  * <p>The speed itself is never written to {@code Abilities}, which the game saves: only the client scales its own
- * flight, by the multiple from {@link #send}. The server needs no speed, since it does not simulate player movement.
+ * flight, by the multiple from {@link #sendState}. The server needs no speed, since it does not simulate player
+ * movement.
  *
  * <p>{@link #tick} runs every server tick of a burst and ends it once the player stops flying (the client lands, or
  * vanilla's double jump turns flying off), the multiple drops to 0 (a mod denied it, or the config stopped allowing
@@ -44,9 +45,9 @@ import org.jetbrains.annotations.NotNull;
 @EventBusSubscriber(modid = BurstFlight.MOD_ID)
 public final class SessionController {
 
-    private static final ResourceLocation FLIGHT_ID = ResourceLocation.fromNamespaceAndPath(BurstFlight.MOD_ID,
-            "burst");
-    private static final AttributeModifier FLIGHT = new AttributeModifier(FLIGHT_ID, 1.0,
+    private static final ResourceLocation FLIGHT_MODIFIER_ID = ResourceLocation.fromNamespaceAndPath(
+            BurstFlight.MOD_ID, "burst");
+    private static final AttributeModifier FLIGHT_MODIFIER = new AttributeModifier(FLIGHT_MODIFIER_ID, 1.0,
             AttributeModifier.Operation.ADD_VALUE);
 
     private SessionController() {}
@@ -64,13 +65,13 @@ public final class SessionController {
     }
 
     public static boolean start(@NotNull ServerPlayer player) {
-        double multiplier = GrantAttachment.multiplier(player);
-        if (multiplier <= 0.0 || !canFly(player)) {
+        double multiplier = GrantAttachment.getMultiplier(player);
+        if (multiplier <= 0.0 || !isAbleToFly(player)) {
             return false;
         }
         player.setData(SessionAttachments.BURSTING, true);
-        grantFlight(player);
-        send(player, (float) multiplier);
+        addFlightModifier(player);
+        sendState(player, (float) multiplier);
         player.getAbilities().flying = true;
         player.onUpdateAbilities();
         return true;
@@ -78,11 +79,8 @@ public final class SessionController {
 
     public static void stop(@NotNull ServerPlayer player) {
         player.removeData(SessionAttachments.BURSTING);
-        AttributeInstance flight = player.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
-        if (flight != null) {
-            flight.removeModifier(FLIGHT_ID);
-        }
-        send(player, 0.0F);
+        removeFlightModifier(player);
+        sendState(player, 0.0F);
         if (!player.mayFly()) {
             player.getAbilities().flying = false;
         }
@@ -93,14 +91,14 @@ public final class SessionController {
         if (!isBursting(player)) {
             return;
         }
-        float multiplier = (float) GrantAttachment.multiplier(player);
-        if (multiplier <= 0.0F || !canFly(player) || !player.getAbilities().flying) {
+        float multiplier = (float) GrantAttachment.getMultiplier(player);
+        if (multiplier <= 0.0F || !isAbleToFly(player) || !player.getAbilities().flying) {
             stop(player);
             return;
         }
-        grantFlight(player);
+        addFlightModifier(player);
         if (player.getData(SessionAttachments.SENT_MULTIPLIER) != multiplier) {
-            send(player, multiplier);
+            sendState(player, multiplier);
         }
     }
 
@@ -118,18 +116,25 @@ public final class SessionController {
         }
     }
 
-    private static boolean canFly(ServerPlayer player) {
+    private static boolean isAbleToFly(ServerPlayer player) {
         return player.isAlive() && !player.isSpectator() && !player.isPassenger() && !player.isSleeping();
     }
 
-    private static void grantFlight(ServerPlayer player) {
-        AttributeInstance flight = player.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
-        if (flight != null && !flight.hasModifier(FLIGHT_ID)) {
-            flight.addTransientModifier(FLIGHT);
+    private static void addFlightModifier(ServerPlayer player) {
+        AttributeInstance attribute = player.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
+        if (attribute != null && !attribute.hasModifier(FLIGHT_MODIFIER_ID)) {
+            attribute.addTransientModifier(FLIGHT_MODIFIER);
         }
     }
 
-    private static void send(ServerPlayer player, float multiplier) {
+    private static void removeFlightModifier(ServerPlayer player) {
+        AttributeInstance attribute = player.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
+        if (attribute != null) {
+            attribute.removeModifier(FLIGHT_MODIFIER_ID);
+        }
+    }
+
+    private static void sendState(ServerPlayer player, float multiplier) {
         player.setData(SessionAttachments.SENT_MULTIPLIER, multiplier);
         PacketDistributor.sendToPlayer(player, new SessionPayloads.State(multiplier));
     }

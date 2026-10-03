@@ -27,13 +27,13 @@ import org.lwjgl.glfw.GLFW;
  */
 
 @EventBusSubscriber(modid = BurstFlight.MOD_ID, value = Dist.CLIENT)
-public final class SprintTaps {
+public final class SprintListener {
 
     private static final int DOUBLE_TAP_TICKS = 7;
-    private static final DoubleTap SPRINT_TAPS = new DoubleTap(DOUBLE_TAP_TICKS);
+    private static final DoubleTap DOUBLE_TAP = new DoubleTap(DOUBLE_TAP_TICKS);
     private static long ticks;
 
-    private SprintTaps() {}
+    private SprintListener() {}
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -60,7 +60,7 @@ public final class SprintTaps {
                 || !minecraft.options.keySprint.isActiveAndMatches(key)) {
             return;
         }
-        if (SPRINT_TAPS.press(ticks)) {
+        if (DOUBLE_TAP.press(ticks)) {
             PacketDistributor.sendToServer(SessionPayloads.Toggle.INSTANCE);
         }
     }

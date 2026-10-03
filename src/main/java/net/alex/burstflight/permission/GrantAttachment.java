@@ -13,8 +13,8 @@ import org.jetbrains.annotations.NotNull;
  * Where a player's {@link Grant} lives, and the only code that reads or writes it.
  *
  * <p>{@link #GRANT} is saved with the player and survives death, so a mod decides once. {@link #allow},
- * {@link #deny} and {@link #reset} write it; {@link #multiplier} resolves it with the {@link ServerConfig} into the
- * multiple in force, 0 meaning the player may not burst-fly. An own multiple is clamped when written and must be
+ * {@link #deny} and {@link #reset} write it; {@link #getMultiplier} resolves it with the {@link ServerConfig} into
+ * the multiple in force, 0 meaning the player may not burst-fly. An own multiple is clamped when written and must be
  * finite.
  *
  * @author Alex
@@ -50,7 +50,7 @@ public final class GrantAttachment {
         player.removeData(GRANT);
     }
 
-    public static double multiplier(@NotNull ServerPlayer player) {
+    public static double getMultiplier(@NotNull ServerPlayer player) {
         Grant grant = player.getExistingDataOrNull(GRANT);
         return Multipliers.resolve(grant == null ? null : grant.allowed(),
                 grant == null ? null : grant.multiplier().orElse(null), ServerConfig.EVERYONE.get(),

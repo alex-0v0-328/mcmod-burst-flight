@@ -42,6 +42,6 @@ public class BurstFlight {
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
         GrantAttachment.ATTACHMENT_TYPES.register(modEventBus);
         SessionAttachments.ATTACHMENT_TYPES.register(modEventBus);
-        modEventBus.addListener(SessionPayloads::register);
+        modEventBus.addListener(SessionPayloads::onRegisterPayloadHandlers);
     }
 }

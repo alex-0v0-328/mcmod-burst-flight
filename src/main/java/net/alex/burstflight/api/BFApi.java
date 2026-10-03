@@ -52,7 +52,7 @@ public final class BFApi {
     }
 
     public static double getMultiplier(@NotNull ServerPlayer player) {
-        return GrantAttachment.multiplier(player);
+        return GrantAttachment.getMultiplier(player);
     }
 
     public static boolean isBursting(@NotNull ServerPlayer player) {

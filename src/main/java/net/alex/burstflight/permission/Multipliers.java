@@ -29,10 +29,10 @@ public final class Multipliers {
         return Math.clamp(multiplier, MIN, MAX);
     }
 
-    public static double resolve(@Nullable Boolean allowed, @Nullable Double granted,
-                                 boolean everyone, double configured) {
-        if (allowed == null) { return everyone ? clamp(configured) : 0.0; }
+    public static double resolve(@Nullable Boolean allowed, @Nullable Double grantedMultiplier, boolean everyone,
+            double configuredMultiplier) {
+        if (allowed == null) { return everyone ? clamp(configuredMultiplier) : 0.0; }
         if (!allowed) { return 0.0; }
-        return clamp(granted == null ? configured : granted);
+        return clamp(grantedMultiplier == null ? configuredMultiplier : grantedMultiplier);
     }
 }
