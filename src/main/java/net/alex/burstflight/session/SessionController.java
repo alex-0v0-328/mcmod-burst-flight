@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * <p>{@link #tick} runs every server tick of a burst and ends it once the player stops flying (the client lands, or
  * vanilla's double jump turns flying off), the multiple drops to 0 (a mod denied it, or the config stopped allowing
- * everyone) or the player can no longer fly. Otherwise it reasserts the modifier, which a load from disk or a respawn
+ * everyone) or the player can no longer fly. Otherwise, it reasserts the modifier, which a load from disk or a respawn
  * through the End portal leaves behind, and resends a changed multiple. {@link #stop} removes the modifier and, when
  * nothing else lets the player fly, turns flying off, so a survival player falls from where the burst ended; a
  * creative player keeps flying at normal speed. It always resends the abilities: a client that turned flying back on

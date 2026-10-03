@@ -10,7 +10,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * The per-player state of a burst, all server side.
  *
- * <p>{@link #BURSTING} marks a burst in progress; it is saved, so a player who logs out mid-air is still flying on
+ * <p>{@link #BURSTING} marks a burst in progress; it is saved, so a player who logs out midair is still flying on
  * return, but not kept through death. {@link #SENT_MULTIPLIER} is the multiple the client was last told; it is never
  * saved or copied, so a fresh player object (login, respawn) starts at 0 and gets the multiple resent.
  *
