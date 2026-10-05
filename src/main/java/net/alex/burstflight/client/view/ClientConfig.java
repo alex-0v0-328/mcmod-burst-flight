@@ -8,7 +8,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
  *
  * <p>{@link #FOV_EFFECT} turns the wider view on or off; {@link #FOV_INCREASE} is how much wider, in percent
  * ({@link FovWidening}). Both are read every frame, so an edit applies at once. Labels and tooltips for the in-game
- * config screen come from {@code en_us.json} only (Alex, 2026-10-02), under {@link #LANG} (Alex, 2026-10-03).
+ * config screen come from {@code en_us.json} only, under {@link #LANG}.
  *
  * @author Alex
  * @version 1.0.0
